@@ -37,10 +37,12 @@ return [
 
     'guards' => [
         'api' => [
-            'driver' => 'session',
+            'driver' => 'passport', // Ensure this is set to 'passport'
             'provider' => 'users',
+            'hash' => false,
         ],
     ],
+
 
     /*
     |--------------------------------------------------------------------------

@@ -3,10 +3,11 @@
 namespace App\Services;
 
 use App\Traits\LoginTrait;
+use App\Traits\LogoutTrait;
 use App\Traits\RegisterTrait;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
-
+use Illuminate\Support\Facades\Auth;
 
 class AuthClass
 {
@@ -41,6 +42,14 @@ class AuthClass
                 'user' => $result['user'],
                 'token' => $result['token'],
             ],
+        ], 200);
+    }
+
+    public function logout()
+    {
+        Auth::user()->tokens()->delete();
+        return response()->json([
+            'message' => 'User logged out successfully',
         ], 200);
     }
 }
