@@ -32,13 +32,33 @@ class MessageController extends Controller
             $filePath = $request->file('file')->store('messages', 'public');
         }
 
+        // Check if a conversation already exists between the two users
+        $conversation = Conversation::where(function ($query) {
+            $query->where('user1_id', Auth::id())
+                  ->where('user2_id', request('receiver_id'));
+        })->orWhere(function ($query) {
+            $query->where('user1_id', request('receiver_id'))
+                  ->where('user2_id', Auth::id());
+        })->first();
+
+        // If no conversation exists, create a new one
+        if (!$conversation) {
+            $conversation = Conversation::create([
+                'user1_id' => Auth::id(),
+                'user2_id' => $request->receiver_id,
+            ]);
+        }
+
+        // Create the message
         $message = Message::create([
             'sender_id' => Auth::id(),
             'receiver_id' => $request->receiver_id,
+            'conversation_id' => $conversation->id,
             'message' => $request->message,
             'file_path' => $filePath,
         ]);
 
+        // Broadcast the message event
         broadcast(new MessageSent($message))->toOthers();
 
         return response()->json([
@@ -47,27 +67,6 @@ class MessageController extends Controller
         ]);
     }
 
-
-
-
-    /**
-     * Retrieve messages between the authenticated user and another user.
-     */
-    // public function getMessages(Request $request, $receiver_id)
-    // {
-    //     $messages = Message::where(function ($query) use ($receiver_id) {
-    //             $query->where('sender_id', Auth::id())
-    //                   ->where('receiver_id', $receiver_id);
-    //         })
-    //         ->orWhere(function ($query) use ($receiver_id) {
-    //             $query->where('sender_id', $receiver_id)
-    //                   ->where('receiver_id', Auth::id());
-    //         })
-    //         ->orderBy('created_at', 'asc')
-    //         ->get();
-
-    //     return response()->json($messages);
-    // }
 
     public function getMessages(Request $request, $receiver_id)
     {
