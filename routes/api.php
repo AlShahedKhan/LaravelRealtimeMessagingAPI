@@ -5,6 +5,9 @@ use App\Events\TestBroadcastEvent;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\MessageController;
+use Symfony\Component\Mime\MessageConverter;
+
+use function Pest\Laravel\get;
 
 // Registration Route
 Route::post('register', [AuthController::class, 'register']);
@@ -22,6 +25,12 @@ Route::middleware('auth:api')->group(function () {
 
     Route::get('/conversations', [MessageController::class, 'getConversations']);
 
+    // crate a group
+    Route::post('/groups', [MessageController::class, 'createGroup']);
+    // send message to the group
+    Route::post('/groups/{group_id}/messages', [MessageController::class, 'sendGroupMessages']);
+    // fetch messages from the group
+    Route::get('/groups/{group_id}/messages', [MessageController::class, 'getGroupMessages']);
 });
 
 Route::get('/user', function (Request $request) {
